@@ -32,16 +32,6 @@
 
 <div class="row">
 	<div class="col-md-2">
-		<div class="list-group">
-			<a href="#" class="list-group-item disabled">
-				当前已有分组
-			</a>
-			{% for k in teamdict.keys() %}
-				<a href="/team?team_id={{k}}" class="list-group-item ">
-					<h4 class="list-group-item-heading">{{teamdict[k]}}</h4>
-				</a>
-			{% endfor %}
-		</div>
 	</div>
 
 	<div class="col-md-10">
@@ -52,57 +42,7 @@
 			</div>
 		{% endfor %}
 		
-
-		{% for k in userdict.keys() %}
-			<a href="/user?user_id={{k}}" class="button_link">
-				<h4 class="list-group-item-heading">{{userdict[k]}}</h4>
-				<span class="line line_top"></span>
-				<span class="line line_right"></span>
-				<span class="line line_bottom"></span>
-				<span class="line line_left"></span>
-			</a>
-		{% endfor %}
-
 	</div>
 </div>
 
-{% endblock %}
-
-
-
-{% block script %}
-<script>
-	$(document).ready(function() {
-		$('#table').bootstrapTable({
-			method: 'get',
-			url: '/getinfo/team',
-			striped: true,
-			showRefresh: true, 
-			dataType: "json",
-			toolbar:"#custom-toolbar",
-			search: true,
-			contentType: "application/x-www-form-urlencoded",
-			showColumns: true,
-			columns:[
-					{field:"name",title:"组名",width:200,align:"center"},
-					{field:"team_leader",title:"组长",width:70,align:"center"},
-					{field:"teamlist",title:"成员",width:400,align:"center"},
-					{field:"operate",title:"操作",width:150,align:"center"}
-				]
-			});           
-    })
-
-    
-	function operateFormatter(value, row, index) {
-		return [            
-			'<a type="button" class="enter button button-tiny button-action btn-xs" href="javascript:void(0)">',
-				'<i class="glyphicon glyphicon-ok">进入</i>',
-		].join('');
-	}
-	window.operateEvents = {
-		'click .enter': function (e, value, row, index) {
-			self.location='/team?team_id=' + row.id; 
-		}
-	};
-</script>
 {% endblock %}

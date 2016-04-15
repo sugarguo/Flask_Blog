@@ -14,7 +14,9 @@ Created on 2016年04月15日
 '''
 
 import os
+import sys
 import json
+sys.path.insert(0,'ext_lib')
 
 from app import create_app, db
 from app.models import User, Article

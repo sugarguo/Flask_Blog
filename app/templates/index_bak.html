@@ -3,6 +3,7 @@
 {% block styles %}
 	{{ super() }}
 	<link href="{{ url_for('static', filename='css/bootstrap-table.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 {% endblock %}
    	
 {% block scripts %}
@@ -24,39 +25,45 @@
 
 
 {% block content %}
-<ol class="breadcrumb">
+<!--ol class="breadcrumb">
 	<li class="active"><a href="/">Home</a></li>
-</ol>
+</ol-->
 <br/>
 
 <div class="row">
-	<div class="col-md-1"></div>
-	<div class="col-md-10">
-		<div>
-			{% for message in get_flashed_messages() %}
-				<div class="alert alert-warning">
-					<button type="button" class="close" data-dismiss="alert">&times;</button>
-					{{ message }}
+	<div class="col-md-2">
+		<div class="list-group">
+			<a href="#" class="list-group-item disabled">
+				当前已有分组
+			</a>
+			{% for k in teamdict.keys() %}
+				<a href="/team?team_id={{k}}" class="list-group-item ">
+					<h4 class="list-group-item-heading">{{teamdict[k]}}</h4>
+				</a>
 			{% endfor %}
 		</div>
-		<div id="custom-toolbar">
-			<div class="form-inline" role="form">
-				<!--a type="button" onclick="create_note()" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-plus">新建</span></a-->
-				<!--a type="button" onclick="add_note()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-import">导入</span></a-->
-			</div>
-		</div>
-		<table id="table">
-			<thead>
-				<tr>
-					<th data-field="team_name" data-align="center">组名</th>
-					<th data-field="team_leader" data-align="center">组长</th>
-					<th data-field="teamlist" data-align="center">成员</th>
-					<th data-field="operate" data-align="center" data-formatter="operateFormatter" data-events="operateEvents">操作</th>
-				</tr>
-			</thead>
-		</table>
 	</div>
-	<div class="col-md-1"></div>
+
+	<div class="col-md-10">
+		{% for message in get_flashed_messages() %}
+			<div class="alert alert-warning">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				{{ message }}
+			</div>
+		{% endfor %}
+		
+
+		{% for k in userdict.keys() %}
+			<a href="/user?user_id={{k}}" class="button_link">
+				<h4 class="list-group-item-heading">{{userdict[k]}}</h4>
+				<span class="line line_top"></span>
+				<span class="line line_right"></span>
+				<span class="line line_bottom"></span>
+				<span class="line line_left"></span>
+			</a>
+		{% endfor %}
+
+	</div>
 </div>
 
 {% endblock %}

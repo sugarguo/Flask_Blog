@@ -149,23 +149,9 @@ def getinfo_recordinguserlist():
 
 
 @main.route('/')
-@main.route('/index.html')
 def index():
     titlename = u"Sugarguo_Flask_Blog"
-    teamdict = {}
-    tempdict = {}
-    userdict = {}
-    teamlist = db.session.query(User.username, Team).filter(User.id == Team.leader_id).all()#teamlist = Team.query.filter_by().all()
-    if teamlist is not None:
-        for item in teamlist:
-            tempdict = item[1].__dict__
-            del tempdict["_sa_instance_state"]
-            teamdict[str(tempdict['id'])] = tempdict['name'] + ' | ' + item[0]
-    userlist = db.session.query(User).filter(User.username != 'admin').all()#User.query.filter_by().all()
-    if userlist is not None:
-        for item in userlist:
-            tempdict = item.__dict__
-            userdict[str(tempdict['id'])] = tempdict['username']
+
     return render_template('index.html', **locals())
 
 

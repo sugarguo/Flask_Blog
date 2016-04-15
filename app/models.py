@@ -17,8 +17,10 @@ File             models.py
 '''
 
 
-from . import login_manager
 from . import db
+from . import login_manager
+
+from datetime import datetime
 from flask.ext.login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -51,10 +53,10 @@ class User(UserMixin, db.Model):
 class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key = True)
-    title = db.Column(db.String(255), unique = True, index = True)
+    title = db.Column(db.String(255), index = True)
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index = True, default=datetime.utcnow)
-    tags = db.Column(db.Enum, index = True)
+    tags = db.Column(db.Text)
 
 
     def __repr__(self):
