@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block styles %}
+	{{ super() }}
+	<link href="{{ url_for('static', filename='css/bootstrap-table.css') }}" rel="stylesheet">
+{% endblock %}
+   	
+{% block scripts %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='js/bootstrap-table.js') }}"></script>
+{% endblock %}
+
+
+{% block nav_right %}
+    {% if current_user.is_authenticated %}
+    <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
+    <li><a href="{{ url_for('admin.control') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
+    {% else %}
+    <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
+	<li><a href="{{ url_for('admin.login') }}"><span class="glyphicon glyphicon-stop"> 登陆 </span></a></li>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade bs-example-modal-sm" id="editTeamModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog" >
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="authModalLabel"></h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<form class="form-horizontal" role="form" id="team_form" method="post">
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-1 control-label" for="team_id">分组id:</label>
+							<div class="col-md-8">
+								<input type="text" placeholder="必须输入" class="form-control" id="team_id" type="text" name="team_id">
+							</div>
+							<input id="op" name="op" type="hidden"/>
+							<input id="date" name="date" type="hidden"/>
+							<input id="type" name="type" type="hidden"/>
+							<input id="id" name="id" type="hidden"/>
+						</div>
+	
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-1 control-label" for="team_name">组名:</label>
+							<div class="col-md-8">
+								<input type="text" placeholder="分组名" class="form-control" id="team_name" name="team_name">
+							</div>
+						</div>
+	
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-1 control-label" for="leader">Leader：</label>
+							<div class="col-md-8">
+								<select class="form-control" id="leader" name="leader">
+									{% for k in userdict.keys() %}
+										<option value="{{k}}">{{userdict[k]}}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>		         
+					</form>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="button button-border button-rounded button-primary" data-dismiss="modal">取消</button>
+				<a type="button" class="button button-glow button-border button-rounded button-primary" onclick="form_submit()">确认</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade bs-example-modal-sm" id="editUserModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog" >
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="authModalLabel"></h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<form class="form-horizontal" role="form" id="user_form" method="post">
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-1 control-label" for="user_name">用户名:</label>
+							<div class="col-md-8">
+								<input type="text" placeholder="必须输入" class="form-control" id="user_name" type="text" name="user_name">
+							</div>
+							<input id="op" name="op" type="hidden"/>
+							<input id="date" name="date" type="hidden"/>
+							<input id="type" name="type" type="hidden"/>
+							<input id="id" name="id" type="hidden"/>
+						</div>
+	
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-1 control-label" for="user_password">用户密码:</label>
+							<div class="col-md-8">
+								<input type="text" placeholder="必须输入" class="form-control" id="user_password" name="user_password">
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-1 control-label" for="user_email">用户邮件:</label>
+							<div class="col-md-8">
+								<input type="text" placeholder="必须输入" class="form-control" id="user_email" name="user_email">
+							</div>
+						</div>
+	
+						<div class="form-group">
+							<label class="col-md-2 col-md-offset-1 control-label" for="team">Team：</label>
+							<div class="col-md-8">
+								<select class="form-control" id="team" name="team">
+									{% for k in teamdict.keys() %}
+										<option value="{{k}}">{{teamdict[k]}}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</div>		         
+					</form>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="button button-border button-rounded button-primary" data-dismiss="modal">取消</button>
+				<a type="button" class="button button-glow button-border button-rounded button-primary" onclick="form_submit()">确认</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="ensureModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteModalLabel"></h4>
+			</div>
+			<div class="modal-body">
+				<span id="span"></span>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				<button type="button" onclick="form_submit()" class="btn btn-primary">确认</button>
+			</div>
+		</div>
+	</div>
+</div>
+<br/>
+
+<div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+		<div>
+			{% for message in get_flashed_messages() %}
+				<div class="alert alert-warning">
+					<button type="button" class="close" data-dismiss="alert">&times;</button>
+					{{ message }}
+			{% endfor %}
+		</div>
+		<div id="custom-toolbar">
+			<div class="form-inline" role="form">
+				<a type="button" onclick="create_team()" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-th-large">新建分组</span></a>
+				<a type="button" onclick="create_user()" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-user">新建员工</span></a>
+				<a type="button" onclick="create_note()" class="button button-royal button-rounded button-small"><span class="glyphicon glyphicon-list">选中编组</span></a>
+				<a type="button" onclick="create_note()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-remove">删除选中</span></a>
+				<a type="button" onclick="create_note()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-minus">删除分组</span></a>
+
+				<!--a type="button" onclick="add_note()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-import">导入</span></a-->
+			</div>
+		</div>
+		<table id="table">
+			<thead>
+				<tr>
+					<th data-field="state" data-checkbox="true"></th>
+					<th data-field="username" data-align="center">员工</th>
+					<th data-field="teamname" data-align="center">所在组</th>
+					<th data-field="email" data-align="center">电子邮件</th>
+					<th data-field="operate" data-align="center" data-formatter="operateFormatter" data-events="operateEvents">操作</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+	<div class="col-md-1"></div>
+</div>
+
+{% endblock %}
+
+
+
+
+{% block script %}
+<script>
+	var dictTeamArr = [];
+	{% for k in teamdict.keys() %}
+		dictTeamArr["{{k}}"]="{{teamdict[k]}}"; 
+	{% endfor %}
+	
+	var dictUserArr = [];
+	{% for k in userdict.keys() %}
+		dictUserArr["{{k}}"]="{{userdict[k]}}"; 
+	{% endfor %}
+	
+	$(document).ready(function() {
+		$('#table').bootstrapTable({
+			method: 'get',
+			url: '/getinfo/control?team_id=' + {{ team_id }},
+			striped: true,
+			showRefresh: true, 
+			dataType: "json",
+			toolbar:"#custom-toolbar",
+			search: true,
+			contentType: "application/x-www-form-urlencoded",
+			showColumns: true,
+			columns:[
+					{field:"state",width:200,checkbox:"true"},
+					{field:"username",title:"员工",width:200,align:"center"},
+					{field:"teamname",title:"所在组",width:400,align:"center"},
+					{field:"email",title:"电子邮件",width:70,align:"center"},
+					{field:"operate",title:"操作",width:150,align:"center"}
+				]
+			});           
+    })
+
+    
+	function operateFormatter(value, row, index) {
+		return [            
+			'<a type="button" class="enter button button-tiny button-action btn-xs" href="javascript:void(0)">',
+				'<i class="glyphicon glyphicon-ok">进入</i>',
+		].join('');
+	}
+	window.operateEvents = {
+		'click .enter': function (e, value, row, index) {
+			self.location='/user?user_id=' + row.id + '&team_id=' + {{ team_id }}; 
+		}
+	};
+	
+	
+	function create_team(){
+		$('h4').html("<b>新建分组</b>");
+		$('#op').val("create");
+		$('#team_id').val("");
+		$('#team_id').removeAttr("readonly");
+		$('#team_name').val("");
+		$('#team_name').removeAttr("readonly");
+		$('#leader').val("1");
+		$('#leader').attr("disabled",false);
+		$('#editTeamModal').modal('show');
+	}
+	
+	function create_user(){
+		$('h4').html("<b>新建用户</b>");
+		$('#op').val("create");
+		$('#user_name').val("");
+		$('#user_name').removeAttr("readonly");
+		$('#user_password').val("");
+		$('#user_password').removeAttr("readonly");
+		$('#user_email').val("");
+		$('#user_email').removeAttr("readonly");
+		$('#team').val("0");
+		$('#team').attr("disabled",false);
+		$('#editUserModal').modal('show');
+	}
+</script>
+{% endblock %}

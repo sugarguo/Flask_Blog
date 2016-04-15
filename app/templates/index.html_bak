@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block styles %}
+	{{ super() }}
+	<link href="{{ url_for('static', filename='css/bootstrap-table.css') }}" rel="stylesheet">
+{% endblock %}
+   	
+{% block scripts %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='js/bootstrap-table.js') }}"></script>
+{% endblock %}
+
+
+{% block nav_right %}
+    {% if current_user.is_authenticated %}
+    <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
+    <li><a href="{{ url_for('admin.control') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
+    {% else %}
+    <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
+	<li><a href="{{ url_for('admin.login') }}"><span class="glyphicon glyphicon-stop"> 登陆 </span></a></li>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<ol class="breadcrumb">
+	<li class="active"><a href="/">Home</a></li>
+</ol>
+<br/>
+
+<div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+		<div>
+			{% for message in get_flashed_messages() %}
+				<div class="alert alert-warning">
+					<button type="button" class="close" data-dismiss="alert">&times;</button>
+					{{ message }}
+			{% endfor %}
+		</div>
+		<div id="custom-toolbar">
+			<div class="form-inline" role="form">
+				<!--a type="button" onclick="create_note()" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-plus">新建</span></a-->
+				<!--a type="button" onclick="add_note()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-import">导入</span></a-->
+			</div>
+		</div>
+		<table id="table">
+			<thead>
+				<tr>
+					<th data-field="team_name" data-align="center">组名</th>
+					<th data-field="team_leader" data-align="center">组长</th>
+					<th data-field="teamlist" data-align="center">成员</th>
+					<th data-field="operate" data-align="center" data-formatter="operateFormatter" data-events="operateEvents">操作</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+	<div class="col-md-1"></div>
+</div>
+
+{% endblock %}
+
+
+
+{% block script %}
+<script>
+	$(document).ready(function() {
+		$('#table').bootstrapTable({
+			method: 'get',
+			url: '/getinfo/team',
+			striped: true,
+			showRefresh: true, 
+			dataType: "json",
+			toolbar:"#custom-toolbar",
+			search: true,
+			contentType: "application/x-www-form-urlencoded",
+			showColumns: true,
+			columns:[
+					{field:"name",title:"组名",width:200,align:"center"},
+					{field:"team_leader",title:"组长",width:70,align:"center"},
+					{field:"teamlist",title:"成员",width:400,align:"center"},
+					{field:"operate",title:"操作",width:150,align:"center"}
+				]
+			});           
+    })
+
+    
+	function operateFormatter(value, row, index) {
+		return [            
+			'<a type="button" class="enter button button-tiny button-action btn-xs" href="javascript:void(0)">',
+				'<i class="glyphicon glyphicon-ok">进入</i>',
+		].join('');
+	}
+	window.operateEvents = {
+		'click .enter': function (e, value, row, index) {
+			self.location='/team?team_id=' + row.id; 
+		}
+	};
+</script>
+{% endblock %}

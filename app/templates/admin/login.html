@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block styles %}
+	{{ super() }}
+	<link href="{{ url_for('static', filename='css/bootstrapValidator.css') }}" rel="stylesheet">
+{% endblock %}
+   	
+{% block scripts %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='js/bootstrapValidator.js')}}"></script>
+{% endblock %}
+
+
+{% block content %}
+<br/>
+
+<div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+	{% for message in get_flashed_messages() %}
+		<div class="alert alert-danger">
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+			{{ message }}
+		</div>
+	{% endfor %}
+	
+		<br/>
+		<div style="text-align:center;clear:both;margin:0px auto;">
+			<form class="form-horizontal" role="form" id="info_form" method="post" action="/admin/login">
+				<h2 class="form-signin-heading">欢迎登陆</h2>
+				<br/>
+				<div class="form-group">
+					<label class="col-md-2 col-md-offset-1 control-label" for="username">用户名:</label>
+					<div class="col-md-6">
+						<input type="text" class="form-control" id="username" name="username" placeholder="username" required="" autofocus="">
+					</div>
+				</div>
+				<br/>
+				<div class="form-group">
+					<label class="col-md-2 col-md-offset-1 control-label" for="password">密码:</label>
+					<div class="col-md-6">
+						<input type="password" class="form-control" id="password" name="password" placeholder="password" required="">
+					</div>
+				</div>
+				<br/>
+				<label class="checkbox">
+					<input type="checkbox" value="remember-me">记住我
+				</label>
+				<button class="button button-glow button-rounded button-raised button-primary" type="submit">登陆</button>
+			</form>
+		</div>
+		<br/>
+		<div class="alert alert-warning">
+			<button type="button" class="close" data-dismiss="alert">×</button>
+			普通用户禁止登陆！请使用管理员用户登陆！
+		</div>
+	</div>
+	
+	<div class="col-md-1"></div>
+</div>
+{% endblock %}
+
+
+
+{% block script %}
+<script>
+	$(document).ready(function() {
+		$('#info_form').bootstrapValidator({
+			message: 'This value is not valid',
+			feedbackIcons: {
+				valid: 'glyphicon glyphicon-ok',
+				invalid: 'glyphicon glyphicon-remove',
+				validating: 'glyphicon glyphicon-refresh'
+			},
+			fields: {
+				username: {
+					validators: {
+						notEmpty: {
+							message: 'The username is required'
+						}
+					}
+				},
+				password: {
+					validators: {
+						notEmpty: {
+							message: 'The password is required'
+						}
+					}
+				},
+			}
+		});
+	});
+</script>
+{% endblock %}
+				

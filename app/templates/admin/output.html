@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block nav_left %}
+    {% if current_user.is_authenticated and current_user.username != 'admin' %}
+    <li><a href="/user?user_id={{ user_id }}"><span class="glyphicon glyphicon-stop">快捷进入</span></a></li>
+	{% endif %}
+{% endblock %}
+
+{% block nav_right %}
+    {% if current_user.is_authenticated %}
+    <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
+    <li><a href="{{ url_for('admin.control') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
+    {% else %}
+    <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
+	<li><a href="{{ url_for('admin.login') }}"><span class="glyphicon glyphicon-stop"> 登陆 </span></a></li>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+
+<div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+		{% for message in get_flashed_messages() %}
+			<div class="alert alert-warning">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				{{ message }}
+			</div>
+		{% endfor %}
+	</div>
+	<div class="col-md-1"></div>
+</div>
+
+{% endblock %}
