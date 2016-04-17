@@ -15,7 +15,7 @@
 {% block nav_right %}
     {% if current_user.is_authenticated %}
     <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
-    <li><a href="{{ url_for('admin.control') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+    <li><a href="{{ url_for('admin.index') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
 	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
     {% else %}
     <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
@@ -32,9 +32,14 @@
 
 <div class="row">
 	<div class="col-md-2">
-	</div>
-
-	<div class="col-md-10">
+        <ul class="nav nav-pills nav-stacked">
+			{% for k in packet_dict.keys() %}
+				<li role="presentation"><a href="/article" + k>{{ packet_dict[k] }}</a></li>
+			{% endfor %}
+            <li role="presentation"><a href="{{ url_for('main.about') }}">关于</a></li>
+        </ul>
+    </div>
+	<div class="col-md-9">
 		{% for message in get_flashed_messages() %}
 			<div class="alert alert-warning">
 				<button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -42,7 +47,29 @@
 			</div>
 		{% endfor %}
 		
+		<div class="row">
+		{% for article_item in article_dict %}
+        	<div class="panel panel-primary">
+            	<div class="panel-heading">
+                	<h3 class="panel-title">{{ article_item[1] }}</h3><p class="text-right">{{ article_item[2] }}</p>
+            	</div>
+            	<div class="panel-body">
+                	<a href="/article?article_id={{ article_item[0] }}">查看全文</a>
+            	</div>
+        	</div>
+		{% endfor %}
+		</div>
 	</div>
 </div>
 
+{% endblock %}
+
+
+
+{% block script %}
+<script>
+	
+	
+	
+</script>
 {% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block styles %}
+	{{ super() }}
+	<link href="{{ url_for('static', filename='css/bootstrap-table.css') }}" rel="stylesheet">
+{% endblock %}
+   	
+{% block scripts %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='js/bootstrap-table.js') }}"></script>
+{% endblock %}
+
+
+{% block nav_left %}
+    {% if current_user.is_authenticated and current_user.username != 'admin' %}
+    <li><a href="/user?user_id={{ user_id }}"><span class="glyphicon glyphicon-stop">快捷编辑</span></a></li>
+	{% endif %}
+{% endblock %}
+
+{% block nav_right %}
+    {% if current_user.is_authenticated %}
+    <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
+    <li><a href="{{ url_for('admin.index') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
+    {% else %}
+    <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
+	<li><a href="{{ url_for('admin.login') }}"><span class="glyphicon glyphicon-stop"> 登陆 </span></a></li>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="ensureModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteModalLabel"></h4>
+			</div>
+			<div class="modal-body">
+				<span id="span"></span>
+				<input id="id" name="id" type="hidden"/>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				<button type="button" onclick="dform_submit()" class="btn btn-primary">确认</button>
+			</div>
+		</div>
+	</div>
+</div>
+<br/>
+
+<div class="row">
+	<div class="col-md-2">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation"><a href="{{ url_for('admin.index') }}">控制面板</a></li>
+            <li role="presentation" class="active"><a href="{{ url_for('admin.article') }}">文章编辑</a></li>
+            <li role="presentation"><a href="/">查看站点</a></li>
+            <li role="presentation"><a href="{{ url_for('admin.logout') }}">退出登录</a></li>
+        </ul>
+    </div>
+	<div class="col-md-9">
+        
+		{% for message in get_flashed_messages() %}
+			<div class="alert alert-warning">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				{{ message }}
+			</div>
+		{% endfor %}
+        
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Sugarguo--Flask_Blog系统</h3>
+            </div>
+            <div class="panel-body">
+                请在此处创建修改删除文章！
+            </div>
+        </div>
+        
+		<div id="custom-toolbar">
+			<div class="form-inline" role="form">
+				<a type="button" href="{{ url_for('admin.edit')}}" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-th-large">新建文章</span></a>
+				<a type="button" onclick="team_create()" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-list">新建分组</span></a>
+				<a type="button" onclick="team_article()" class="button button-royal button-rounded button-small"><span class="glyphicon glyphicon-list">选中分组</span></a>
+				<a type="button" onclick="team_delete()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-list">删除分组</span></a>
+				<a type="button" onclick="deletelist_article()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-minus">删除选中</span></a>
+			</div>
+		</div>
+		<table id="table">
+			<thead>
+				<tr>
+					<th data-field="state" data-checkbox="true"></th>
+					<th data-field="title" data-align="center">标题</th>
+					<!--th data-field="body" data-align="center">正文</th-->
+					<th data-field="tags" data-align="center">标签</th>
+					<th data-field="packet_id" data-align="center" data-formatter="packetFormatter">分组</th>
+					<th data-field="show" data-align="center" data-formatter="showFormatter">显示</th>
+                    <th data-field="timestamp" data-align="center">创建时间</th>
+					<th data-field="operate" data-align="center" data-formatter="operateFormatter" data-events="operateEvents">操作</th>
+				</tr>
+			</thead>
+		</table>
+
+	</div>
+	<div class="col-md-1"></div>
+</div>
+
+{% endblock %}
+
+
+
+
+{% block script %}
+<script>
+	var dictShowArr = [];
+	{% for k in show_dict.keys() %}
+		dictShowArr["{{k}}"]="{{show_dict[k]}}"; 
+	{% endfor %}
+	
+	
+	$(document).ready(function() {
+		$('#table').bootstrapTable({
+			method: 'get',
+            url: '/admin/getarticle',
+			striped: true,
+			showRefresh: true, 
+			dataType: "json",
+			toolbar:"#custom-toolbar",
+			search: true,
+			contentType: "application/x-www-form-urlencoded",
+			showColumns: true,
+			columns:[
+					{field:"state",width:200,checkbox:"true"},
+					{field:"title",title:"标题",width:200,align:"center"},
+					//{field:"body",title:"正文",width:400,align:"center"},
+					{field:"tags",title:"标签",width:80,align:"center"},
+					{field:"packet_id",title:"分组",width:100,align:"center"},
+					{field:"show",title:"显示",width:50,align:"center"},
+					{field:"timestamp",title:"创建时间",width:130,align:"center"},
+					{field:"operate",title:"操作",width:150,align:"center"}
+				]
+			});
+    })
+	
+	function operateFormatter(value, row, index) {
+		return [
+			'<a type="button" class="enter button button-tiny button-action btn-xs" href="javascript:void(0)">',
+				'<i class="glyphicon glyphicon-ok">查看</i>',
+            '</a>   ',
+			'<a type="button" class="modify button button-tiny button-primary btn-xs" href="javascript:void(0)">',
+				'<i class="glyphicon glyphicon-ok">编辑</i>',
+            '</a>   ',
+			'<a type="button" class="delete button button-tiny button-caution btn-xs" href="javascript:void(0)">',
+				'<i class="glyphicon glyphicon-ok">删除</i>',
+		].join('');
+	}
+	window.operateEvents = {
+		'click .enter': function (e, value, row, index) {
+			self.location='/article?article_id=' + row.id; 
+        },
+		'click .modify': function (e, value, row, index) {
+			self.location='/admin/edit?article_id=' + row.id; 
+        },
+        'click .delete': function (e, value, row, index) {
+            $('#id').val(row.id);
+            $('h5').html("确认信息");
+            $('#span').html("是否确认删除？");
+            $('#ensureModal').modal('show');
+        }
+    };
+	
+	function dform_submit(){
+		self.location='/admin/delete?article_id=' + $('#id').val(); 
+    }
+    
+    
+	function openmodifywin(){
+		var checkboxs = document.getElementsByName("btSelectItem");
+		var rows = document.getElementById("table").rows;
+		for(var i=0;i<checkboxs.length;i++){
+			if(checkboxs[i].checked ==true){ 
+				article_id = rows[i+1].cells[1].innerHTML;
+				alert(article_id);
+			}
+		}
+	}
+    
+    function showFormatter(value) {
+        var text=dictShowArr[value];
+        return '<span>'+text+'</span>';
+    }
+    
+</script>
+{% endblock %}

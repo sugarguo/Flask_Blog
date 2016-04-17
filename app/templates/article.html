@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block nav_right %}
+    {% if current_user.is_authenticated %}
+    <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
+    <li><a href="{{ url_for('admin.index') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
+    {% else %}
+    <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
+	<li><a href="{{ url_for('admin.login') }}"><span class="glyphicon glyphicon-stop"> 登陆 </span></a></li>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<!--ol class="breadcrumb">
+	<li class="active"><a href="/">Home</a></li>
+</ol-->
+<br/>
+
+<div class="row">
+	<div class="col-md-1"></div>
+	<div class="col-md-10">
+        <br/>
+        <h1>{{ title }}</h1>
+        <br/>
+        <hr style="height:1px;border:none;border-top:1px solid #555555;" />
+        <p>{{ body|safe }}</p>
+
+	</div>
+</div>
+
+{% endblock %}
+
+
+
+{% block script %}
+<script>
+	
+	
+	
+</script>
+{% endblock %}

@@ -26,18 +26,13 @@ from flask.ext.login import login_user, login_required, logout_user, current_use
 
 from . import admin
 from .. import db
-from ..models import User, Article
+from ..models import User, Article, Packet
 from manage import app
 
 
-work_statuslist = {
-               "0" : u"组长",
-               "1" : u"员工"
-               }
-
-submit_statuslist = {
-               "0" : u"未提交",
-               "1" : u"已提交"
+show_list = {
+               "0" : u"不显示",
+               "1" : u"显示"
                }
 
 
@@ -47,13 +42,10 @@ def login():
     if request.method == 'POST':
         username=request.form.get('username')
         user = User.query.filter_by(username=username).first()
-        if user.work_status == 0 or username == 'admin':
-            if user is not None and user.verify_password(password = request.form.get('password')):
-                login_user(user, request.form.get('remember_me'))
-                return redirect(request.args.get('next') or url_for('admin.control'))
-            flash(u'用户名或密码错误，请重试！')
-        else:
-            flash(u'普通用户禁止登陆！请使用管理员用户登陆！')
+        if user is not None and user.verify_password(password = request.form.get('password')):
+            login_user(user, request.form.get('remember_me'))
+            return redirect(request.args.get('next') or url_for('admin.index'))
+        flash(u'用户名或密码错误，请重试！')
     return render_template('admin/login.html', **locals())
 
 @admin.route('/logout')
@@ -64,12 +56,6 @@ def logout():
     flash(u'你已经退出系统！')
     return redirect(url_for('main.index'))
 
-@admin.route('/test')
-@login_required
-def test():
-    titlename = u"Sugarguo_Flask_Blog"
-    return "adsdsa"
-
 
 def getinfo_TeamName(team_id):
     tempdict = {}
@@ -78,14 +64,6 @@ def getinfo_TeamName(team_id):
     if teamteamlist is not None:
         tempdict = teamteamlist.__dict__
         return tempdict['name']
-    
-def getinfo_TeamLeader(team_id):
-    tempdict = {}
-    tempname = ""
-    teamteamlist = Team.query.filter_by(id = team_id).first()
-    if teamteamlist is not None:
-        tempdict = teamteamlist.__dict__
-        return tempdict['leader_id']
     
         
 class CJsonEncoder(json.JSONEncoder):
@@ -98,107 +76,160 @@ class CJsonEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-@admin.route('/getinfo/control', methods = ['GET', 'POST'])
+@admin.route('/index')
 @login_required
-def getinfo_control():
+def index():
+    titlename = u"Sugarguo_Flask_Blog"
+    site_name = u"糖果果技术博客"
+    #print current_user
+    #print current_user.is_authenticated()
+    return render_template('admin/index.html', **locals())
+    
+    
+@admin.route('/getarticle')
+@login_required
+def getarticle():
     tempdict = {}
-    userlist = []
     tempjson = "["
-    if current_user.username == u'admin':
-        userlist = db.session.query(User).filter(User.username != 'admin').all()
-        #print "admin",userlist
-    else:
-        leaderlist = Team.query.filter_by(leader_id = request.args.get('user_id',0)).all()
-        if leaderlist is not None:
-            for team_id in leaderlist:
-                #team_id.__dict__['id']
-                userlist = userlist + User.query.filter_by(team_id = team_id.__dict__['id']).all()
-            userlist = userlist + db.session.query(User).filter(User.team_id == None, User.work_status != 0).all()
-            #User.query.filter_by(team_id = None).all()
-        #userlist = User.query.filter_by(team_id = team_id).all()
-    if userlist is not None:
-        for item in userlist:
-            #print item
-            #item.workload = str(item.workload)
-            #item.endtime = item.endtime.strftime("%Y-%m-%d %H:%M:%S")
+    articlelist = Article.query.filter_by().all()
+    if articlelist is not None:
+        for item in articlelist:
             tempdict = item.__dict__
             del tempdict["_sa_instance_state"]
-            #print tempdict
-        
-            tempdict['teamname'] = getinfo_TeamName(tempdict['team_id'])
             value = json.dumps(tempdict,cls=CJsonEncoder)
             tempjson += value + ","
         tempjson = tempjson[:-1] + "]"
-
-    #print tempjson
-    return tempjson
-
-
-
-@admin.route('/show')
-@login_required
-def show():
-    titlename = u"Sugarguo_Flask_Blog"
-    #print current_user
-    #print current_user.is_authenticated()
-    return render_template('admin/show.html', **locals())
-
-
-
-@admin.route('/control')
-@login_required
-def control():
-    titlename = u"Sugarguo_Flask_Blog"
-    
-    teamdict = {}
-    userdict = {}
-    tempdict = {}
-    #teamdict['0'] = 'null'
-    
-    #print current_user.username
-    if current_user.username == u'admin':
-        team_id = -1
-        teamlist = Team.query.filter_by().all()
-        userlist = db.session.query(User).filter(User.username != 'admin').all()
-        if teamlist is not None:
-            for item in teamlist:
-                tempdict = item.__dict__
-                teamdict[str(tempdict['id'])] = tempdict['name']
-        if userlist is not None:
-            for item in userlist:
-                tempdict = item.__dict__
-                userdict[str(tempdict['id'])] = tempdict['username']
     else:
-        user = User.query.filter_by(username=current_user.username).first()
-        if user is not None:
-        #print user.__dict__
-            team_id = user.__dict__['team_id']
-            user_id = user.__dict__['id']
-            if team_id == None:
-                team_id = -1
-            teamlist = Team.query.filter_by(leader_id = int(user.__dict__['id'])).all()
-            if teamlist is not None:
-                for item in teamlist:
-                    tempdict = item.__dict__
-                    teamdict[str(tempdict['id'])] = tempdict['name']
-                #print teamlist
-            userdict[int(user.__dict__['id'])] = user.__dict__['username']
-        #userlist = User.query.filter_by(team_id = team_id).all()
-    #print current_user
-    #team_id = int(request.args.get('team_id',0))
-    #user_role = Team.query.filter_by(name="first").first()
-    #users = user_role.users
-    worklist = work_statuslist
-    submitlist = submit_statuslist
-    #users[0].role
+        tempjson = ""
+    return tempjson
     
-    #query = User.query.filter_by().all()
-    #print query
-    #print query[0].role
-    #print dir(data[0])
-    #print data[0].Test.name
+    
+@admin.route('/article')
+@login_required
+def article():
+    titlename = u"Sugarguo_Flask_Blog"
+    
+    global show_list
+    show_dict = show_list
+    #print current_user
     #print current_user.is_authenticated()
-    return render_template('admin/control.html', **locals())
+    return render_template('admin/article.html', **locals())
+    
+
+@admin.route('/psotarticle', methods = ['GET', 'POST'])
+@login_required
+def psot_article():
+    article_id = request.args.get('article_id',0)
+    if request.method == 'POST':
+        if article_id == 0:
+            article = Article(
+                title = request.form.get('title'),
+                packet_id = request.form.get('packet_id'),
+                show = request.form.get('show'),
+                body = request.form.get('body'),
+                timestamp = datetime.now()
+            )
+            db.session.add(article)
+            db.session.commit()
+            flash(u'文章发布完毕')
+        else:
+            article = Article.query.filter_by(id = article_id).first()
+            if article is not None:
+                article.title = request.form.get('title'),
+                article.packet_id = request.form.get('packet_id'),
+                article.show = request.form.get('show'),
+                article.body = request.form.get('body'),
+                article.timestamp = datetime.now()
+                db.session.add(article)
+                db.session.commit()
+            flash(u'文章更新完毕')
+            
+    return redirect(url_for('admin.article'))
+
+
+
+@admin.route('/delete', methods = ['GET', 'POST'])
+@login_required
+def delete_article():
+    article_id = request.args.get('article_id',-1)
+    print article_id
+    article = Article.query.filter_by(id = article_id).first()
+    print article
+    if article is not None:
+        print "enter"
+        db.session.delete(article)
+        db.session.commit()
+    flash(u'文章删除完毕')
+            
+    return redirect(url_for('admin.article'))
+
+
+@admin.route('/edit', methods = ['GET', 'POST'])
+@login_required
+def edit():
+    titlename = u"Sugarguo_Flask_Blog"
+    article_id = request.args.get('article_id',0)
+    body = u"巴拉巴拉"
+    tempdict = {}
+    packet_dict = {}
+    packet_list = Packet.query.filter_by().all()
+    if packet_list is not None:
+        for temp in tempdict:
+            tempdict = temp.__dict__
+            del tempdict["_sa_instance_state"]
+            packet_dict = dict( packet_dict.items() + tempdict.items() )
+
+    if article_id != 0:
+        article = Article.query.filter_by(id = article_id).first()
+        print article
+        if article is not None:
+            article = article.__dict__
+            title = article['title']
+            packet_id = article['packet_id']
+            show = article['show']
+            body = article['body'][:-1]
+            
+    return render_template('admin/edit.html', **locals())
+
+
+@admin.route('/ckupload/', methods=['POST', 'OPTIONS'])
+@login_required
+def ckupload():
+    """CKEditor file upload"""
+    error = ''
+    url = ''
+    callback = request.args.get("CKEditorFuncNum")
+
+    if request.method == 'POST' and 'upload' in request.files:
+        fileobj = request.files['upload']
+        fname, fext = os.path.splitext(fileobj.filename)
+        rnd_name = '%s%s' % (gen_rnd_filename(), fext)
+
+        filepath = os.path.join(app.static_folder, 'upload', rnd_name)
+
+        # 检查路径是否存在，不存在则创建
+        dirname = os.path.dirname(filepath)
+        if not os.path.exists(dirname):
+            try:
+                os.makedirs(dirname)
+            except:
+                error = 'ERROR_CREATE_DIR'
+        elif not os.access(dirname, os.W_OK):
+            error = 'ERROR_DIR_NOT_WRITEABLE'
+
+        if not error:
+            fileobj.save(filepath)
+            url = url_for('static', filename='%s/%s' % ('upload', rnd_name))
+    else:
+        error = 'post error'
+
+    res = """<script type="text/javascript">
+  window.parent.CKEDITOR.tools.callFunction(%s, '%s', '%s');
+</script>""" % (callback, url, error)
+
+    response = make_response(res)
+    response.headers["Content-Type"] = "text/html"
+    return response
 
 
 @admin.route('/outputjson')
@@ -245,16 +276,3 @@ def inputjson():
     flash(u'导出成功，请到根目录查看！')
     return render_template('admin/output.html', **locals())
     #return redirect(url_for('main.index'))
-
-
-@admin.route('/sendmail')
-@login_required
-def sendmail():
-    titlename = u"Sugarguo_Flask_Blog"
-    send_email('wang.chao@embedway.com', 'Confirm Your Account',
-               'admin/email/confirm', sendstr='send ok')
-    flash('A new confirmation email has been sent to you by email.')
-    return redirect(url_for('main.index'))
-    #print current_user
-    #print current_user.is_authenticated()
-    #return render_template('admin/control.html', **locals())

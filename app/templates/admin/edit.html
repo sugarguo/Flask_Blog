@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block styles %}
+	{{ super() }}
+	<!--link href="{{ url_for('static', filename='ckeditor/contents.css') }}" rel="stylesheet"-->
+{% endblock %}
+   	
+{% block scripts %}
+	{{ super() }}
+	<script src="{{ url_for('static', filename='ckeditor/ckeditor.js') }}"></script>
+{% endblock %}
+
+
+
+{% block nav_left %}
+    {% if current_user.is_authenticated and current_user.username != 'admin' %}
+    <li><a href="/user?user_id={{ user_id }}"><span class="glyphicon glyphicon-stop">快捷进入</span></a></li>
+	{% endif %}
+{% endblock %}
+
+{% block nav_right %}
+    {% if current_user.is_authenticated %}
+    <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
+    <li><a href="{{ url_for('admin.control') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
+    {% else %}
+    <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
+	<li><a href="{{ url_for('admin.login') }}"><span class="glyphicon glyphicon-stop"> 登陆 </span></a></li>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="ensureModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteModalLabel"></h4>
+			</div>
+			<div class="modal-body">
+				<span id="span"></span>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				<button type="button" onclick="uform_submit()" class="btn btn-primary">确认</button>
+			</div>
+		</div>
+	</div>
+</div>
+<br/>
+
+<div class="row">
+	<div class="col-md-2">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation"><a href="{{ url_for('admin.index') }}">控制面板</a></li>
+            <li role="presentation" class="active"><a href="{{ url_for('admin.article') }}">文章编辑</a></li>
+            <li role="presentation"><a href="/">查看站点</a></li>
+            <li role="presentation"><a href="{{ url_for('admin.logout') }}">退出登录</a></li>
+        </ul>
+    </div>
+	<div class="col-md-9">
+        
+		{% for message in get_flashed_messages() %}
+			<div class="alert alert-warning">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				{{ message }}
+			</div>
+		{% endfor %}
+        
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Sugarguo--Flask_Blog系统</h3>
+            </div>
+            <div class="panel-body">
+                请在此处修改或者查看站点设置！
+            </div>
+        </div>
+
+		<div class="container-fluid">
+        <div class="row">
+            <form class="form-horizontal" role="form" id="article_form" method="post">
+                <div class="form-group">
+                    <label class="col-md-2  control-label" for="title">文章标题:</label>
+                    <div class="col-md-9">
+                        <input type="text" placeholder="文章标题，必须输入" class="form-control" id="title" name="title">
+                    </div>
+                </div>
+				<div class="form-group">
+					<label class="col-md-2 control-label" for="packet_id">分组：</label>
+					<div class="col-md-9">
+						<select class="form-control" id="packet_id" name="packet_id">
+							<option value="0">未分组</option>
+								{% for k in packet_dict.keys() %}
+									<option value="{{k}}">{{packet_dict[k]}}</option>
+								{% endfor %}
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-md-2 control-label" for="show">是否显示：</label>
+					<div class="col-md-9">
+						<select class="form-control" id="show" name="show">
+							<option value="1">显示</option>
+							<option value="0">不显示</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-md-2 control-label" for="body">正文：</label>
+					<div class="col-md-9">
+						<textarea id="body" name="body" class="ckeditor"></textarea>
+					</div>
+				</div>
+            </form>
+			<div class="col-md-offset-8">
+                <button type="button" class="button button-border button-rounded button-primary" data-dismiss="modal">取消</button>
+                <a type="button" class="button button-glow button-border button-rounded button-primary" onclick="aform_submit()">确认</a>
+            </div>
+        </div>
+		</div>
+	</div>
+	<div class="col-md-1"></div>
+</div>
+
+
+
+{% endblock %}
+
+
+
+
+{% block script %}
+<script>
+	var ckEditor = CKEDITOR.replace('body', {
+		filebrowserUploadUrl: '/ckupload/',
+	});
+	
+	{% if title != "" %}
+		$('#title').val( "{{ title }}" );
+		$('#packet_id').val( {{ packet_id }} );
+		$('#show').val( {{ show }} );
+		ckEditor.setData('{{ body|safe }}');
+	{% endif %}
+	
+	
+	var dictPacketArr = [];
+	{% for k in packet_dict.keys() %}
+		dictPacketArr["{{k}}"]="{{packet_dict[k]}}"; 
+	{% endfor %}
+
+
+
+
+	function aform_submit(){
+		article_form.action="{{ url_for('admin.psotarticle') }}";
+		document.getElementById("article_form").submit();
+        //$('#team_form').submit();
+    }
+</script>
+{% endblock %}

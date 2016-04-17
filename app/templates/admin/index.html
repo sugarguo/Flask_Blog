@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block nav_left %}
+    {% if current_user.is_authenticated and current_user.username != 'admin' %}
+    <li><a href="/user?user_id={{ user_id }}"><span class="glyphicon glyphicon-stop">快捷编辑</span></a></li>
+	{% endif %}
+{% endblock %}
+
+{% block nav_right %}
+    {% if current_user.is_authenticated %}
+    <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
+    <li><a href="{{ url_for('admin.index') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
+    {% else %}
+    <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
+	<li><a href="{{ url_for('admin.login') }}"><span class="glyphicon glyphicon-stop"> 登陆 </span></a></li>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="ensureModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="deleteModalLabel"></h4>
+			</div>
+			<div class="modal-body">
+				<span id="span"></span>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+				<button type="button" onclick="uform_submit()" class="btn btn-primary">确认</button>
+			</div>
+		</div>
+	</div>
+</div>
+<br/>
+
+<div class="row">
+	<div class="col-md-2">
+        <ul class="nav nav-pills nav-stacked">
+            <li role="presentation" class="active"><a href="{{ url_for('admin.index') }}">控制面板</a></li>
+            <li role="presentation"><a href="{{ url_for('admin.article') }}">文章编辑</a></li>
+            <li role="presentation"><a href="/">查看站点</a></li>
+            <li role="presentation"><a href="{{ url_for('admin.logout') }}">退出登录</a></li>
+        </ul>
+    </div>
+	<div class="col-md-9">
+        
+		{% for message in get_flashed_messages() %}
+			<div class="alert alert-warning">
+				<button type="button" class="close" data-dismiss="alert">&times;</button>
+				{{ message }}
+			</div>
+		{% endfor %}
+        
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">Sugarguo--Flask_Blog系统</h3>
+            </div>
+            <div class="panel-body">
+                请在此处修改或者查看站点设置！
+            </div>
+        </div>
+        
+        <div class="row">
+            <form class="form-horizontal" role="form" id="system_form" method="post">
+                <div class="form-group">
+                    <label class="col-md-2  control-label" for="site_name">站点名称:</label>
+                    <div class="col-md-9">
+                        <input type="text" placeholder="站点名称，请输入" class="form-control" id="site_name" name="site_name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2  control-label" for="nasite_domainme">站点域名:</label>
+                    <div class="col-md-9">
+                        <input type="text" placeholder="站点域名，请输入" class="form-control" id="site_domain" name="site_domain">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2  control-label" for="site_email">联系邮箱:</label>
+                    <div class="col-md-9">
+                        <input type="text" placeholder="联系邮箱，请输入" class="form-control" id="site_email" name="site_email">
+                    </div>
+                </div>
+            </form>
+            <div class="col-md-offset-8">
+                <button type="button" class="button button-border button-rounded button-primary" data-dismiss="modal">取消</button>
+                <a type="button" class="button button-glow button-border button-rounded button-primary" onclick="sform_submit()">确认</a>
+            </div>
+        </div>
+
+	</div>
+	<div class="col-md-1"></div>
+</div>
+
+{% endblock %}
+
+
+
+
+{% block script %}
+<script>
+    $('#site_name').val( "{{ site_name }}" );
+    $('#site_domain').val( "{{ site_domain }}" );
+    $('#site_email').val( "{{ site_email }}" );
+    
+    function tform_submit(){
+		team_form.action="/admin/infodo";
+		document.getElementById("team_form").submit();
+        //$('#team_form').submit();
+    }
+</script>
+{% endblock %}

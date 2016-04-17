@@ -50,6 +50,15 @@ class User(UserMixin, db.Model):
 
 
 
+class Packet(db.Model):
+    __tablename__ = "packets"
+    id = db.Column(db.Integer, primary_key = True)
+    packet_name = db.Column(db.String(255), index = True, unique = True)
+    
+    def __repr__(self):
+        return '<User % r>' % self.packetname
+
+
 class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key = True)
@@ -57,11 +66,27 @@ class Article(db.Model):
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index = True, default=datetime.utcnow)
     tags = db.Column(db.Text)
+    packet_id = db.Column(db.Integer, index = True, default = 0)
+    show = db.Column(db.Integer, default = 1)
 
 
     def __repr__(self):
         return '<Article % r>' % self.title
     
+    
+class Site(db.Model):
+    __tablename__ = 'Sites'
+    id = db.Column(db.Integer, primary_key = True)
+    site_name = db.Column(db.String(255), unique = True)
+    site_domain = db.Column(db.String(255), unique = True)
+    site_email = db.Column(db.String(255), unique = True)
+    site_time = db.Column(db.DateTime, index = True, default=datetime.utcnow)
+    
+    
+    def __repr__(self):
+        return '<Site % r>' % self.site_name   
+
+
     
 @login_manager.user_loader
 def load_user(user_id):
