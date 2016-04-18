@@ -2,6 +2,7 @@
 
 
 > 当前框架  Flask+SQLite+*Markdown+*Frozen+Bootstrap+ckeditor
+
 > 环境 ubuntu + nginx + uwsgi 
 
 
