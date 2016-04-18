@@ -1,2 +1,0 @@
-
-u = User(username = "sugarguo", password = "chaochao520", email = "sugarguo@live.com")

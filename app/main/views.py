@@ -17,6 +17,7 @@ File             main/views.py
 '''
 
 
+import os
 import json
 import time
 
@@ -26,9 +27,33 @@ from flask.ext.login import login_required, current_user
 
 from . import main
 from .. import db
-from ..models import User, Article, Packet
+from ..models import User, Article, Packet, Site
 
 
+
+def site_get():
+    meminfo = {}
+    with open('/proc/meminfo') as f:
+        for line in f:
+            meminfo[line.split(':')[0]] = line.split(':')[1].strip()
+    pids = []
+    for subdir in os.listdir('/proc'):
+        if subdir.isdigit():
+            pids.append(subdir)
+    site_info = {}
+    site_dict = Site.query.filter_by().first()
+    if site_dict is not None:
+        temp_dict = site_dict.__dict__
+        del temp_dict["_sa_instance_state"]
+        site_info = temp_dict
+    else:
+        site_info['site_name'] = 'Sugarguo_Flask_Blog'
+        #site_info['site_domain'] = 'http://www.sugarguo.com/'
+        site_info['site_email'] = 'sugarguo@live.com'
+        
+    site_info['memuse'] = int(meminfo['MemTotal'][:-3]) - int(meminfo['MemFree'][:-3])
+    site_info['pids'] = len(pids)
+    return site_info
 
 class CJsonEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -42,35 +67,32 @@ class CJsonEncoder(json.JSONEncoder):
 
 @main.route('/')
 def index():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
     article_id = request.args.get('article_id',0)
     body = u"巴拉巴拉"
-    tempdict = {}
-    packet_dict = {}
     article_dict = []
+    temp_dict = {}
+    packet_dict = {}
     packet_list = Packet.query.filter_by().all()
     if packet_list is not None:
         for temp in packet_list:
-            tempdict = temp.__dict__
-            del tempdict["_sa_instance_state"]
-            packet_dict = dict( packet_dict.items() + tempdict.items() )
+            temp_dict = temp.__dict__
+            del temp_dict["_sa_instance_state"]
+            packet_dict[str(temp_dict['id'])] = temp_dict['packet_name']
             
     tempdict = {}
     article_list = Article.query.filter_by(show = 1).all()
     if article_list is not None:
         for temp in article_list:
             tempdict = temp.__dict__
-            article_dict.append([tempdict["id"],tempdict["title"],tempdict["timestamp"].strftime('%Y-%m-%d')])
-            
-    print article_dict
-    print article_dict[0][0]
+            article_dict.append([tempdict["id"],tempdict["title"],tempdict["timestamp"].strftime('%Y-%m-%d'),tempdict["body"][:150]])
 
     return render_template('index.html', **locals())
     
     
 @main.route('/about')
 def about():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
 
     return render_template('about.html', **locals())
 
@@ -78,20 +100,19 @@ def about():
 
 @main.route('/article')
 def article():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
     article_id = request.args.get('article_id',0)
 
     if article_id != 0:
         article = Article.query.filter_by(id = article_id).first()
-        print article
         if article is not None:
             article = article.__dict__
+            article_id = article['id']
             title = article['title']
             packet_id = article['packet_id']
             show = article['show']
             timestamp = article['timestamp']
             body = article['body'][:-1]
-            print 'do'
     else:
         return redirect(url_for('main.index'))
 

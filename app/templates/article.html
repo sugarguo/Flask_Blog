@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 
+{% block nav_left %}
+    {% if current_user.is_authenticated and current_user.username != 'admin' %}
+    <li><a href="/admin/edit?article_id={{ article_id }}"><span class="glyphicon glyphicon-stop">快捷编辑</span></a></li>
+	{% endif %}
+{% endblock %}
+
+
 {% block nav_right %}
     {% if current_user.is_authenticated %}
     <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
@@ -32,12 +39,3 @@
 
 {% endblock %}
 
-
-
-{% block script %}
-<script>
-	
-	
-	
-</script>
-{% endblock %}

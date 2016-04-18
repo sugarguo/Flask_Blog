@@ -51,10 +51,11 @@
 		{% for article_item in article_dict %}
         	<div class="panel panel-primary">
             	<div class="panel-heading">
-                	<h3 class="panel-title">{{ article_item[1] }}</h3><p class="text-right">{{ article_item[2] }}</p>
+                	<h3 class="panel-title text-left">{{ article_item[1] }}</h3><p class="panel-title text-right">{{ article_item[2] }}</p>
             	</div>
             	<div class="panel-body">
-                	<a href="/article?article_id={{ article_item[0] }}">查看全文</a>
+                    <h5>{{ article_item[3]|safe }}</h5>
+                	<h4 class="text-right"><a href="/article?article_id={{ article_item[0] }}">查看全文</a></h5>
             	</div>
         	</div>
 		{% endfor %}
@@ -62,14 +63,4 @@
 	</div>
 </div>
 
-{% endblock %}
-
-
-
-{% block script %}
-<script>
-	
-	
-	
-</script>
 {% endblock %}

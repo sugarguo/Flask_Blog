@@ -11,17 +11,10 @@
 {% endblock %}
 
 
-
-{% block nav_left %}
-    {% if current_user.is_authenticated and current_user.username != 'admin' %}
-    <li><a href="/user?user_id={{ user_id }}"><span class="glyphicon glyphicon-stop">快捷进入</span></a></li>
-	{% endif %}
-{% endblock %}
-
 {% block nav_right %}
     {% if current_user.is_authenticated %}
     <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
-    <li><a href="{{ url_for('admin.control') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
+    <li><a href="{{ url_for('admin.index') }}"><span class="glyphicon glyphicon-stop"> 控制面板 </span></a></li>
 	<li><a href="{{ url_for('admin.logout') }}"><span class="glyphicon glyphicon-stop"> 退出 </span></a></li>
     {% else %}
     <!--li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{% if name %}{{ name }}！{% else %} 未登录用户 {% endif%} </span></a></li-->
@@ -55,6 +48,7 @@
         <ul class="nav nav-pills nav-stacked">
             <li role="presentation"><a href="{{ url_for('admin.index') }}">控制面板</a></li>
             <li role="presentation" class="active"><a href="{{ url_for('admin.article') }}">文章编辑</a></li>
+            <li role="presentation"><a href="{{ url_for('admin.outputjson') }}">输出到JSON</a></li>
             <li role="presentation"><a href="/">查看站点</a></li>
             <li role="presentation"><a href="{{ url_for('admin.logout') }}">退出登录</a></li>
         </ul>
@@ -90,7 +84,6 @@
 					<label class="col-md-2 control-label" for="packet_id">分组：</label>
 					<div class="col-md-9">
 						<select class="form-control" id="packet_id" name="packet_id">
-							<option value="0">未分组</option>
 								{% for k in packet_dict.keys() %}
 									<option value="{{k}}">{{packet_dict[k]}}</option>
 								{% endfor %}
@@ -133,7 +126,7 @@
 {% block script %}
 <script>
 	var ckEditor = CKEDITOR.replace('body', {
-		filebrowserUploadUrl: '/ckupload/',
+		filebrowserUploadUrl: '/admin/ckupload/',
 	});
 	
 	{% if title != "" %}
@@ -153,7 +146,7 @@
 
 
 	function aform_submit(){
-		article_form.action="{{ url_for('admin.psotarticle') }}";
+		article_form.action="{{ url_for('admin.psot_article') }}";
 		document.getElementById("article_form").submit();
         //$('#team_form').submit();
     }

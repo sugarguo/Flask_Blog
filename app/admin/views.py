@@ -19,14 +19,15 @@ File             admin/views.py
 import os
 import time
 import json
+import random
 from datetime import datetime, date
 
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, make_response
 from flask.ext.login import login_user, login_required, logout_user, current_user
 
 from . import admin
 from .. import db
-from ..models import User, Article, Packet
+from ..models import User, Article, Packet, Site
 from manage import app
 
 
@@ -35,10 +36,34 @@ show_list = {
                "1" : u"显示"
                }
 
+def site_get():
+    meminfo = {}
+    with open('/proc/meminfo') as f:
+        for line in f:
+            meminfo[line.split(':')[0]] = line.split(':')[1].strip()
+    pids = []
+    for subdir in os.listdir('/proc'):
+        if subdir.isdigit():
+            pids.append(subdir)
+    site_info = {}
+    site_dict = Site.query.filter_by().first()
+    if site_dict is not None:
+        temp_dict = site_dict.__dict__
+        del temp_dict["_sa_instance_state"]
+        site_info = temp_dict
+    else:
+        site_info['site_name'] = 'Sugarguo_Flask_Blog'
+        #site_info['site_domain'] = 'http://www.sugarguo.com/'
+        site_info['site_email'] = 'sugarguo@live.com'
+        
+    site_info['memuse'] = int(meminfo['MemTotal'][:-3]) - int(meminfo['MemFree'][:-3])
+    site_info['pids'] = len(pids)
+    return site_info
+
 
 @admin.route('/login', methods = ['GET', 'POST'])
 def login():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
     if request.method == 'POST':
         username=request.form.get('username')
         user = User.query.filter_by(username=username).first()
@@ -51,7 +76,7 @@ def login():
 @admin.route('/logout')
 @login_required
 def logout():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
     logout_user()
     flash(u'你已经退出系统！')
     return redirect(url_for('main.index'))
@@ -79,10 +104,7 @@ class CJsonEncoder(json.JSONEncoder):
 @admin.route('/index')
 @login_required
 def index():
-    titlename = u"Sugarguo_Flask_Blog"
-    site_name = u"糖果果技术博客"
-    #print current_user
-    #print current_user.is_authenticated()
+    site_info = site_get()
     return render_template('admin/index.html', **locals())
     
     
@@ -107,16 +129,22 @@ def getarticle():
 @admin.route('/article')
 @login_required
 def article():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
     
     global show_list
     show_dict = show_list
-    #print current_user
-    #print current_user.is_authenticated()
+    packet_dict = {}
+    packet_list = Packet.query.filter_by().all()
+    if packet_list is not None:
+        for temp in packet_list:
+            temp_dict = temp.__dict__
+            del temp_dict["_sa_instance_state"]
+            packet_dict[str(temp_dict['id'])] = temp_dict['packet_name']
+    
     return render_template('admin/article.html', **locals())
     
 
-@admin.route('/psotarticle', methods = ['GET', 'POST'])
+@admin.route('/postarticle', methods = ['GET', 'POST'])
 @login_required
 def psot_article():
     article_id = request.args.get('article_id',0)
@@ -135,10 +163,10 @@ def psot_article():
         else:
             article = Article.query.filter_by(id = article_id).first()
             if article is not None:
-                article.title = request.form.get('title'),
-                article.packet_id = request.form.get('packet_id'),
-                article.show = request.form.get('show'),
-                article.body = request.form.get('body'),
+                article.title = request.form.get('title')
+                article.packet_id = request.form.get('packet_id')
+                article.show = request.form.get('show')
+                article.body = request.form.get('body')
                 article.timestamp = datetime.now()
                 db.session.add(article)
                 db.session.commit()
@@ -147,37 +175,103 @@ def psot_article():
     return redirect(url_for('admin.article'))
 
 
+@admin.route('/postsite', methods = ['GET', 'POST'])
+@login_required
+def psot_site():
+    article_id = request.args.get('article_id',0)
+    if request.method == 'POST':
+        site_info = Site.query.filter_by().first()
+        if article is not None:
+            site_info['site_name'] = request.form.get('site_name'),
+            site_info['site_domain'] = request.form.get('site_domain'),
+            site_info['site_email'] = request.form.get('site_email'),
+            db.session.add(article)
+            db.session.commit()
+        flash(u'站点信息更新完毕')
+            
+    return redirect(url_for('admin.index'))
+
+
 
 @admin.route('/delete', methods = ['GET', 'POST'])
 @login_required
-def delete_article():
-    article_id = request.args.get('article_id',-1)
-    print article_id
-    article = Article.query.filter_by(id = article_id).first()
-    print article
-    if article is not None:
-        print "enter"
-        db.session.delete(article)
-        db.session.commit()
-    flash(u'文章删除完毕')
-            
+def delete_artpk():
+    op = request.form.get('op')
+    if request.method == 'POST':
+        if op == 'dl_art':
+            temp_infolist = request.form.get('temp_info')[:-1]
+            temp_infolist = temp_infolist.split(",")
+            for item in temp_infolist:
+                article = Article.query.filter_by(id = item).first()
+                if article is not None:
+                    db.session.delete(article)
+                    db.session.commit()
+                else:
+                    flash(u'出现错误')
+                    break;
+        elif op == 'd_pk':
+            packet_id = request.form.get('packet_id')
+            packet = Packet.query.filter_by(id = packet_id).first()
+            if packet is not None:
+                db.session.delete(packet)
+                db.session.commit()
+                flash(u'文章分组更新完毕')
+            else:
+                flash(u'出现错误')
+        elif op == 'd_art':
+            article_id = request.form.get('id')
+            article = Article.query.filter_by(id = article_id).first()
+            if article is not None:
+                db.session.delete(article)
+                db.session.commit()
+            flash(u'文章删除完毕')
+    return redirect(url_for('admin.article'))
+    
+
+@admin.route('/add', methods = ['GET', 'POST'])
+@login_required
+def add_artpk():
+    op = request.form.get('op')
+    if request.method == 'POST':
+        if op == 'ul_art':
+            temp_infolist = request.form.get('temp_info')[:-1]
+            temp_infolist = temp_infolist.split(",")
+            print temp_infolist
+            packet_id = request.form.get('packet_id')
+            for item in temp_infolist:
+                article = Article.query.filter_by(id = item).first()
+                if article is not None:
+                    article.packet_id = packet_id
+                    db.session.add(article)
+                    db.session.commit()
+                else:
+                    flash(u'出现错误')
+                    break;
+        elif op == 'c_pk':
+            packet_name = request.form.get('packet_name')
+            packet = Packet(
+                packet_name = packet_name
+            )
+            db.session.add(packet)
+            db.session.commit()
+            flash(u'分组创建完毕')
     return redirect(url_for('admin.article'))
 
 
 @admin.route('/edit', methods = ['GET', 'POST'])
 @login_required
 def edit():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
     article_id = request.args.get('article_id',0)
-    body = u"巴拉巴拉"
-    tempdict = {}
+    temp_dict = {}
     packet_dict = {}
     packet_list = Packet.query.filter_by().all()
     if packet_list is not None:
-        for temp in tempdict:
-            tempdict = temp.__dict__
-            del tempdict["_sa_instance_state"]
-            packet_dict = dict( packet_dict.items() + tempdict.items() )
+        for temp in packet_list:
+            temp_dict = temp.__dict__
+            del temp_dict["_sa_instance_state"]
+            packet_dict[str(temp_dict['id'])] = temp_dict['packet_name']
+            #packet_dict = dict( packet_dict.items() + tempdict.items() )
 
     if article_id != 0:
         article = Article.query.filter_by(id = article_id).first()
@@ -187,14 +281,20 @@ def edit():
             title = article['title']
             packet_id = article['packet_id']
             show = article['show']
-            body = article['body'][:-1]
+            body = article['body'][:-2]
             
     return render_template('admin/edit.html', **locals())
 
 
-@admin.route('/ckupload/', methods=['POST', 'OPTIONS'])
+def gen_rnd_filename():
+    filename_prefix = datetime.now().strftime('%Y%m%d%H%M%S')
+    return '%s%s' % (filename_prefix, str(random.randrange(1000, 10000)))
+
+
+@admin.route('/ckupload/', methods=['GET', 'POST', 'OPTIONS'])
 @login_required
 def ckupload():
+    #site_info = site_get()
     """CKEditor file upload"""
     error = ''
     url = ''
@@ -222,7 +322,7 @@ def ckupload():
             url = url_for('static', filename='%s/%s' % ('upload', rnd_name))
     else:
         error = 'post error'
-
+    print callback
     res = """<script type="text/javascript">
   window.parent.CKEDITOR.tools.callFunction(%s, '%s', '%s');
 </script>""" % (callback, url, error)
@@ -235,17 +335,13 @@ def ckupload():
 @admin.route('/outputjson')
 @login_required
 def outputjson():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
     tempdict = {}
     tempjson = "["
-    recordinglist = db.session.query(User.username, Recording).filter(User.id == Recording.user_id, 'YEARWEEK(`endtime`) = YEARWEEK(now())-1').all()
-    for item in recordinglist:
-        tempdict = item[1].__dict__
+    info_list = Article.query.filter_by().all()
+    for item in info_list:
+        tempdict = item.__dict__
         del tempdict["_sa_instance_state"]
-        del tempdict["user_id"]
-        tempdict["username"] = item[0]
-        tempdict["shortsha1"] = "embedway"
-        tempdict["link"] = "sugarguo"
         value = json.dumps(tempdict,cls=CJsonEncoder)
         tempjson += value + ",\n"
     tempjson = tempjson[:-2] + "]"
@@ -257,18 +353,17 @@ def outputjson():
     
     flash(u'导出成功，请到根目录查看！')
     return render_template('admin/output.html', **locals())
-    #return redirect(url_for('main.index'))
     
 @admin.route('/inputjson')
 @login_required
 def inputjson():
-    titlename = u"Sugarguo_Flask_Blog"
+    site_info = site_get()
        
     filename = 'page_list_'+str(time.strftime("%Y%m%d"))+'.txt'
     output = open(filename,'r')
     for item in json.loads(output.read()):
-        print item,item["username"]
-        print datetime.strptime(item["endtime"],'%Y-%m-%d')
+        print item,item["title"]
+        print datetime.strptime(item["timestamp"],'%Y-%m-%d %H:%M:%S')
         #user = User.query.filter_by(username=item["username"]).first()
     
     output.close()  

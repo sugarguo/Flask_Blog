@@ -11,12 +11,6 @@
 {% endblock %}
 
 
-{% block nav_left %}
-    {% if current_user.is_authenticated and current_user.username != 'admin' %}
-    <li><a href="/user?user_id={{ user_id }}"><span class="glyphicon glyphicon-stop">快捷编辑</span></a></li>
-	{% endif %}
-{% endblock %}
-
 {% block nav_right %}
     {% if current_user.is_authenticated %}
     <li><a class="active"><span class="glyphicon glyphicon-user"> 你好，{{ current_user.username }} </span></a></li>
@@ -31,23 +25,45 @@
 
 {% block content %}
 <!-- Modal -->
-<div class="modal fade" id="ensureModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="AllModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="deleteModalLabel"></h4>
 			</div>
 			<div class="modal-body">
-				<span id="span"></span>
-				<input id="id" name="id" type="hidden"/>
+                <span id="span"></span>
+				<div class="form-group" id="div-group">
+					<div class="row">
+						<form class="form-horizontal" role="form" id="all_form" method="post">
+                            <input id="id" name="id" type="hidden"/>
+							<input id="op" name="op" type="hidden"/>
+                            <input id="temp_info" name="temp_info" type="hidden">
+							<label class="col-md-2 col-md-offset-1 control-label" id="packet_show">分组：</label>
+							<div class="col-md-8" id="packet_div">
+                                <input type="text" placeholder="分组名称，请输入" class="form-control" id="packet_name" name="packet_name"/>
+								<select class="form-control" id="packet_id" name="packet_id">
+									{% for k in packet_dict.keys() %}
+										<option value="{{k}}">{{packet_dict[k]}}</option>
+									{% endfor %}
+								</select>
+							</div>
+						</form>
+					</div>
+				</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-				<button type="button" onclick="dform_submit()" class="btn btn-primary">确认</button>
+				<button type="button" class="btn btn-primary" id="btn_submit">确认</button>
 			</div>
 		</div>
 	</div>
 </div>
+
+
+
+
+
 <br/>
 
 <div class="row">
@@ -55,6 +71,7 @@
         <ul class="nav nav-pills nav-stacked">
             <li role="presentation"><a href="{{ url_for('admin.index') }}">控制面板</a></li>
             <li role="presentation" class="active"><a href="{{ url_for('admin.article') }}">文章编辑</a></li>
+            <li role="presentation"><a href="{{ url_for('admin.outputjson') }}">输出到JSON</a></li>
             <li role="presentation"><a href="/">查看站点</a></li>
             <li role="presentation"><a href="{{ url_for('admin.logout') }}">退出登录</a></li>
         </ul>
@@ -73,23 +90,24 @@
                 <h3 class="panel-title">Sugarguo--Flask_Blog系统</h3>
             </div>
             <div class="panel-body">
-                请在此处创建修改删除文章！
+                请在此处创建修改删除文章、分组！
             </div>
         </div>
         
 		<div id="custom-toolbar">
 			<div class="form-inline" role="form">
 				<a type="button" href="{{ url_for('admin.edit')}}" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-th-large">新建文章</span></a>
-				<a type="button" onclick="team_create()" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-list">新建分组</span></a>
-				<a type="button" onclick="team_article()" class="button button-royal button-rounded button-small"><span class="glyphicon glyphicon-list">选中分组</span></a>
-				<a type="button" onclick="team_delete()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-list">删除分组</span></a>
-				<a type="button" onclick="deletelist_article()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-minus">删除选中</span></a>
+				<a type="button" onclick="packet_create()" class="button button-primary button-rounded button-small"><span class="glyphicon glyphicon-list">新建分组</span></a>
+				<a type="button" onclick="packet_update()" class="button button-royal button-rounded button-small"><span class="glyphicon glyphicon-list">选中分组</span></a>
+				<a type="button" onclick="packet_delete()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-list">删除分组</span></a>
+				<a type="button" onclick="article_delete()" class="button button-caution button-rounded button-small"><span class="glyphicon glyphicon-minus">删除选中</span></a>
 			</div>
 		</div>
 		<table id="table">
 			<thead>
 				<tr>
 					<th data-field="state" data-checkbox="true"></th>
+                    <th data-field="id" data-align="center">Id</th>
 					<th data-field="title" data-align="center">标题</th>
 					<!--th data-field="body" data-align="center">正文</th-->
 					<th data-field="tags" data-align="center">标签</th>
@@ -116,6 +134,10 @@
 	{% for k in show_dict.keys() %}
 		dictShowArr["{{k}}"]="{{show_dict[k]}}"; 
 	{% endfor %}
+    var dictPacketArr = [];
+	{% for k in packet_dict.keys() %}
+		dictPacketArr["{{k}}"]="{{packet_dict[k]}}"; 
+	{% endfor %}
 	
 	
 	$(document).ready(function() {
@@ -131,6 +153,7 @@
 			showColumns: true,
 			columns:[
 					{field:"state",width:200,checkbox:"true"},
+                    {field:"id",title:"Id",width:50,align:"center"},
 					{field:"title",title:"标题",width:200,align:"center"},
 					//{field:"body",title:"正文",width:400,align:"center"},
 					{field:"tags",title:"标签",width:80,align:"center"},
@@ -163,12 +186,116 @@
         },
         'click .delete': function (e, value, row, index) {
             $('#id').val(row.id);
+            $('#op').val("d_art");
             $('h5').html("确认信息");
             $('#span').html("是否确认删除？");
-            $('#ensureModal').modal('show');
+            document.getElementById("packet_show").style.display="none";
+            $('#packet_name').attr("type","hidden");//.remove();
+            document.getElementById("packet_id").style.display="none";
+            $('#btn_submit').attr("onclick","artform_submit()");
+            $('#AllModal').modal('show');
         }
     };
-	
+    
+    
+    function packet_create(){
+        $('#op').val("c_pk");
+        $('h5').html("创建信息");
+        $('#span').attr("type","hidden");//.remove();
+        $('#packet_show').attr("for","packet_name");
+        $('#packet_name').attr("type","show");
+        document.getElementById("packet_id").style.display="none";
+        $('#btn_submit').attr("onclick","pkform_submit()");
+        $('#AllModal').modal('show');
+    };
+    
+    function packet_update(){
+        $('#op').val("ul_art");
+        $('h5').html("选中分组");
+        $('#span').attr("type","hidden");
+        $('#packet_show').attr("for","packet_id");
+        $('#packet_name').attr("type","hidden");//.remove();
+        document.getElementById("packet_id").style.display="";
+        $('#btn_submit').attr("onclick","pkform_submit()");
+        $('#AllModal').modal('show');
+    };
+    
+    
+    function packet_delete(){
+        $('#op').val("d_pk");
+        $('h5').html("是否确认删除？");
+        $('#span').attr("type","hidden");
+        $('#packet_show').attr("for","packet_id");
+        $('#packet_name').attr("type","hidden");//.remove();
+        document.getElementById("packet_id").style.display="";
+        $('#btn_submit').attr("onclick","artform_submit()");
+        $('#AllModal').modal('show');
+    };
+    
+    
+    function article_delete(){
+        $('#op').val("dl_art");
+        $('h5').html("确认信息");
+        $('#span').html("是否确认删除？");
+        document.getElementById("packet_show").style.display="none";
+        $('#packet_name').attr("type","hidden");//.remove();
+        document.getElementById("packet_id").style.display="none";
+        $('#btn_submit').attr("onclick","artform_submit()");
+        $('#AllModal').modal('show');
+    };
+    
+     function artform_submit(){
+		var articles = "";
+		var flag = 0;
+		var checkboxs = document.getElementsByName("btSelectItem");
+		var rows = document.getElementById("table").rows;
+		for(var i=0;i<checkboxs.length;i++){
+			if(checkboxs[i].checked ==true){ 
+				article_id = rows[i+1].cells[1].innerHTML;
+				articles += article_id + ",";
+				flag++;
+			}
+		}
+		if(flag > 0 || ($('#op').val() == 'd_pk' && $('#packet_id').val() != 0) || $('#op').val() == 'd_art')
+		{
+            $('#temp_info').val(articles);
+            all_form.action="/admin/delete";
+            $('#all_form').submit();
+        }
+        else
+        {
+			alert("没有勾选，请返回重新勾选！ 或 未分组属于系统默认，无法删除请重试！");
+			$('#AllModal').modal('hide');
+        }
+    }
+    
+    
+     function pkform_submit(){
+		var articles = "";
+		var flag = 0;
+		var checkboxs = document.getElementsByName("btSelectItem");
+		var rows = document.getElementById("table").rows;
+		for(var i=0;i<checkboxs.length;i++){
+			if(checkboxs[i].checked ==true){ 
+				article_id = rows[i+1].cells[1].innerHTML;
+				articles += article_id + ",";
+				flag++;
+			}
+		}
+		if(flag > 0 || $('#op').val() == 'c_pk')
+		{
+			$('#temp_info').val(articles);
+            all_form.action="/admin/add";
+        	$('#all_form').submit();
+        }
+        else
+        {
+			alert("没有勾选，请返回重新勾选！");
+			$('#AllModal').modal('hide');
+        }
+    }
+    
+    
 	function dform_submit(){
 		self.location='/admin/delete?article_id=' + $('#id').val(); 
     }
@@ -187,6 +314,11 @@
     
     function showFormatter(value) {
         var text=dictShowArr[value];
+        return '<span>'+text+'</span>';
+    }
+    
+    function packetFormatter(value) {
+        var text=dictPacketArr[value];
         return '<span>'+text+'</span>';
     }
     

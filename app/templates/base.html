@@ -11,7 +11,7 @@
 	<!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
 	{% endblock %}
     
-	<title>{% if titlename %}{{ titlename }}{% else %}Sugarguo-Weekly_report{% endif %}{% if domain %} | {{ domain }}{% else %}{% endif %}</title>
+	<title>{% if site_info['site_name'] %}{{ site_info['site_name'] }}{% endif %}{% if site_info['site_domain'] %} | {{ site_info['site_domain'] }}{% endif %}</title>
 
 	{% block styles %}
 	<link href="{{ url_for('static', filename='css/buttons.css') }}" rel="stylesheet">
@@ -39,8 +39,8 @@
 		<div class="container-fluid" id="navbar-container">
 			<!-- Brand and toggle get grouped for better mobile display -->
 			<div class="navbar-header pull-left">
-				<a class="navbar-brand" href="{% if domain %}{{ domain }}{% else %}/{% endif %}">
-				{% if titlename %}{{ titlename }}{% else %}Sugarguo-Weekly_report{% endif %}{% if domain %} | {{ domain }}{% else %}{% endif %}
+				<a class="navbar-brand" href="{% if site_info['site_domain'] %}{{ site_info['site_domain'] }}{% else %}/{% endif %}">
+				{% if site_info['site_name'] %}{{ site_info['site_name'] }}{% endif %}{% if domain %} | {{ site_info['site_domain'] }}{% endif %}
 				</a>
 			</div>
 			<ul class="nav navbar-nav navbar-left">
@@ -69,7 +69,14 @@
 		{% block page_content %}
 		{% endblock %}
 	{% endblock %}
-
+    {% block footer%}
+	<div class="alert alert-block alert-default">
+        <footer style="text-align:center">
+            <p>Sugarguo Flask Blog Powered By © 2016 <a href="http://www.sugarguo.com/" title="糖果果|Sugarguo"><strong class="blue">糖果果|Sugarguo</strong></a> Alpha_v0.4.18.</p>
+            <p>{{ site_info['pids'] }} Pids, {{ site_info['memuse'] }} Memory Usage. </p>
+         </footer>
+    </div>
+    {% endblock %}
 	{% block script %}
 	{% endblock %}
 	

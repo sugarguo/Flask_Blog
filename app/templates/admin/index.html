@@ -1,10 +1,5 @@
 {% extends "base.html" %}
 
-{% block nav_left %}
-    {% if current_user.is_authenticated and current_user.username != 'admin' %}
-    <li><a href="/user?user_id={{ user_id }}"><span class="glyphicon glyphicon-stop">快捷编辑</span></a></li>
-	{% endif %}
-{% endblock %}
 
 {% block nav_right %}
     {% if current_user.is_authenticated %}
@@ -43,6 +38,7 @@
         <ul class="nav nav-pills nav-stacked">
             <li role="presentation" class="active"><a href="{{ url_for('admin.index') }}">控制面板</a></li>
             <li role="presentation"><a href="{{ url_for('admin.article') }}">文章编辑</a></li>
+            <li role="presentation"><a href="{{ url_for('admin.outputjson') }}">输出到JSON</a></li>
             <li role="presentation"><a href="/">查看站点</a></li>
             <li role="presentation"><a href="{{ url_for('admin.logout') }}">退出登录</a></li>
         </ul>
@@ -103,13 +99,13 @@
 
 {% block script %}
 <script>
-    $('#site_name').val( "{{ site_name }}" );
-    $('#site_domain').val( "{{ site_domain }}" );
-    $('#site_email').val( "{{ site_email }}" );
+    $('#site_name').val( "{{ site_info['site_name'] }}" );
+    $('#site_domain').val( "{{ site_info['site_domain'] }}" );
+    $('#site_email').val( "{{ site_info['site_email'] }}" );
     
-    function tform_submit(){
-		team_form.action="/admin/infodo";
-		document.getElementById("team_form").submit();
+	function sform_submit(){
+		system_form.action="{{ url_for('admin.psot_site') }}";
+		document.getElementById("system_form").submit();
         //$('#team_form').submit();
     }
 </script>
