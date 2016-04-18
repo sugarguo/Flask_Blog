@@ -69,7 +69,6 @@ class CJsonEncoder(json.JSONEncoder):
 def index():
     site_info = site_get()
     article_id = request.args.get('article_id',0)
-    body = u"巴拉巴拉"
     article_dict = []
     temp_dict = {}
     packet_dict = {}
@@ -93,7 +92,14 @@ def index():
 @main.route('/about')
 def about():
     site_info = site_get()
-
+    temp_dict = {}
+    packet_dict = {}
+    packet_list = Packet.query.filter_by().all()
+    if packet_list is not None:
+        for temp in packet_list:
+            temp_dict = temp.__dict__
+            del temp_dict["_sa_instance_state"]
+            packet_dict[str(temp_dict['id'])] = temp_dict['packet_name']
     return render_template('about.html', **locals())
 
 
@@ -117,3 +123,28 @@ def article():
         return redirect(url_for('main.index'))
 
     return render_template('article.html', **locals())
+    
+    
+@main.route('/articlelist')
+def articlelist():
+    site_info = site_get()
+    packet_id = request.args.get('packet_id',0)
+    
+    article_dict = []
+    temp_dict = {}
+    packet_dict = {}
+    packet_list = Packet.query.filter_by().all()
+    if packet_list is not None:
+        for temp in packet_list:
+            temp_dict = temp.__dict__
+            del temp_dict["_sa_instance_state"]
+            packet_dict[str(temp_dict['id'])] = temp_dict['packet_name']
+            
+    tempdict = {}
+    article_list = Article.query.filter_by(packet_id = packet_id, show = 1).all()
+    if article_list is not None:
+        for temp in article_list:
+            tempdict = temp.__dict__
+            article_dict.append([tempdict["id"],tempdict["title"],tempdict["timestamp"].strftime('%Y-%m-%d'),tempdict["body"][:150]])
+
+    return render_template('index.html', **locals())

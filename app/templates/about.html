@@ -46,19 +46,38 @@
 				{{ message }}
 			</div>
 		{% endfor %}
-		
+
 		<div class="row">
-		{% for article_item in article_dict %}
-        	<div class="panel panel-primary">
-            	<div class="panel-heading">
-                	<h3 class="panel-title text-left">{{ article_item[1] }}</h3><p class="panel-title text-right">{{ article_item[2] }}</p>
-            	</div>
-            	<div class="panel-body">
-                    <h5>{{ article_item[3]|safe }}</h5>
-                	<h4 class="text-right"><a href="/article?article_id={{ article_item[0] }}">查看全文</a></h5>
-            	</div>
-        	</div>
-		{% endfor %}
+			<h1>Flask_Blog</h1>
+			<blockquote>
+				<p>当前框架  Flask+SQLite+<em>Markdown</em>+<em>Frozen</em>+Bootstrap+ckeditor
+				</p>
+				<p>环境 ubuntu + nginx + uwsgi 
+				</p>
+			</blockquote>
+			<h3>2016年04月18日 【第二个试行版本  Alpha_v0.4.18】</h3>
+			<ul>
+				<li>ckeditor编辑器添加上传功能</li>
+				<li>提供文章导出为JSON  /admin/outputjson</li>
+				<li>预留inputjson 接口</li>
+				<li>显示系统当前线程，使用内存</li>
+				<li>提供uwsgi、nginx初级脚本</li>
+			</ul>
+			<h3>2016年04月18日 【第一个试行版本  Alpha_v0.0.1】</h3>
+			<ul>
+				<li>能够创建、编辑、删除文章</li>
+				<li>用户登陆</li>
+				<li>完成基本功能，整合ckeditor编辑器</li>
+				<li>预留outputjson、inputjson</li>
+				<li>测试ckeditor上传</li>
+			</ul>
+			<h2>关于</h2>
+			<ul>
+				<li>@作者：<a href="http://www.sugarguo.com/">糖果果|Sugarguo</a></li>
+				<li><img src="http://7xignn.com1.z0.glb.clouddn.com/LOGO.png" alt="糖果果|Sugarguo"></li>
+				<li>@version        Alpha_v0.4.18</li>
+				<li>@copyright    <a href="http://www.sugarguo.com/">糖果果|Sugarguo</a></li>
+			</ul>
 		</div>
 	</div>
 </div>
