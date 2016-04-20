@@ -75,7 +75,7 @@ class Article(db.Model):
     
     
 class Site(db.Model):
-    __tablename__ = 'sites'
+    __tablename__ = 'Sites'
     id = db.Column(db.Integer, primary_key = True)
     site_name = db.Column(db.String(255), unique = True)
     site_domain = db.Column(db.String(255), unique = True)
