@@ -69,7 +69,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user is not None and user.verify_password(password = request.form.get('password')):
             login_user(user, request.form.get('remember_me'))
-            return redirect(request.args.get('next') or url_for('admin.index'))
+            return redirect(url_for('admin.index'))
         flash(u'用户名或密码错误，请重试！')
     return render_template('admin/login.html', **locals())
 
@@ -275,7 +275,7 @@ def edit():
 
     if article_id != 0:
         article = Article.query.filter_by(id = article_id).first()
-        print article
+        #print article
         if article is not None:
             article = article.__dict__
             title = article['title']
@@ -322,7 +322,7 @@ def ckupload():
             url = url_for('static', filename='%s/%s' % ('upload', rnd_name))
     else:
         error = 'post error'
-    print callback
+    #print callback
     res = """<script type="text/javascript">
   window.parent.CKEDITOR.tools.callFunction(%s, '%s', '%s');
 </script>""" % (callback, url, error)
@@ -371,3 +371,4 @@ def inputjson():
     flash(u'导出成功，请到根目录查看！')
     return render_template('admin/output.html', **locals())
     #return redirect(url_for('main.index'))
+

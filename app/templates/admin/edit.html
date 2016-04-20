@@ -146,7 +146,7 @@
 
 
 	function aform_submit(){
-		article_form.action="{{ url_for('admin.psot_article') }}";
+		article_form.action="/admin/postarticle?article_id={{ article_id }}";
 		document.getElementById("article_form").submit();
         //$('#team_form').submit();
     }

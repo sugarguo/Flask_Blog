@@ -16,7 +16,6 @@ login_manager.login_view = 'admin.login'
 login_manager.login_message = u"欢迎登陆，您可以创建/修改/删除 文章！"
 
 
-
 def create_app(config_name):
     app = Flask(__name__)#, static_url_path='/app/static')
     app.config.from_object(config[config_name])
@@ -33,3 +32,5 @@ def create_app(config_name):
     login_manager.init_app(app)
     
     return app
+
+

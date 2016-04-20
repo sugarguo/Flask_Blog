@@ -3,8 +3,17 @@
 
 > 当前框架  Flask+SQLite+*Markdown+*Frozen+Bootstrap+ckeditor
 
-> 环境 ubuntu + nginx + uwsgi 
+> 环境 ubuntu + nginx + gunicorn 
 
+
+### 2016年04月21日 【第三个试行版本  Alpha_v0.4.21】
+
+* 修复文章编辑错误
+* 采用gunicorn作为wsgi服务器
+* 提供flup uwsgi gunicorn 的nginx参数脚本
+* 添加基本数据库脚本，ins.sh
+* ！在文章编辑保存过程中，有可能跳出，请先备份……没搞好……sorry
+，正在找原因
 
 ### 2016年04月18日 【第二个试行版本  Alpha_v0.4.18】
 
@@ -28,6 +37,6 @@
 
 * @作者：[糖果果|Sugarguo](http://www.sugarguo.com/)
 * ![糖果果|Sugarguo](http://7xignn.com1.z0.glb.clouddn.com/LOGO.png)
-* @version    	Alpha_v0.4.18
+* @version    	Alpha_v0.4.21
 * @copyright    [糖果果|Sugarguo](http://www.sugarguo.com/)
 

@@ -87,7 +87,6 @@ class Site(db.Model):
         return '<Site % r>' % self.site_name   
 
 
-    
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
