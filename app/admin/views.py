@@ -147,7 +147,8 @@ def article():
 @admin.route('/postarticle', methods = ['GET', 'POST'])
 @login_required
 def psot_article():
-    article_id = request.args.get('article_id',0)
+    article_id = int(request.args.get('article_id',0))
+    print article_id
     if request.method == 'POST':
         if article_id == 0:
             article = Article(

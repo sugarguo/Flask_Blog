@@ -1,7 +1,0 @@
-from manage import db
-u = User(username = "example", password = "example", email = "example@example.com")
-packet = Packet(id = 0, u'未分组')
-
-db.session.add(u)
-db.session.add(packet)
-db.session.commit()

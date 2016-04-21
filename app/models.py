@@ -33,6 +33,22 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(128), unique = True, index = True)
 
     #recordings = db.relationship('Recording', backref = 'user')
+
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        try:
+            return unicode(self.id)  # python 2
+        except NameError:
+            return str(self.id)  # python 3
     
     @property
     def password(self):
@@ -80,7 +96,7 @@ class Site(db.Model):
     site_name = db.Column(db.String(255), unique = True)
     site_domain = db.Column(db.String(255), unique = True)
     site_email = db.Column(db.String(255), unique = True)
-    site_time = db.Column(db.DateTime, index = True, default=datetime.utcnow)
+    site_time = db.Column(db.DateTime, default=datetime.utcnow)
     
     
     def __repr__(self):
