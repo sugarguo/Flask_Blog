@@ -67,6 +67,14 @@ http {
     #uwsgi_param UWSGI_CHDIR  /home/dell/Git/Python/WifiDog; # 指向网站根目录
     uwsgi_param UWSGI_SCRIPT manage:app; # 指定启动程序
     }
+#配置静态文件转发
+	location ~.*(js|css|png|gif|jpg|mp3|ogg)$ {
+		root /home/dell/Git/Python/Flask_Blog/app/;
+	}
+#配置静态页面转发
+	location ~.*(html)$ {
+		root /home/dell/Git/Python/Flask_Blog/app/;
+	}
   }
 ########################## vhost #############################
     include vhost/*.conf;

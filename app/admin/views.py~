@@ -148,14 +148,14 @@ def article():
 @login_required
 def psot_article():
     article_id = int(request.args.get('article_id',0))
-    #print article_id
+    print article_id
     if request.method == 'POST':
         if article_id == 0:
             article = Article(
                 title = request.form.get('title'),
                 packet_id = request.form.get('packet_id'),
                 show = request.form.get('show'),
-                body = request.form.get('body').strip().replace("\r\n\r\n","<br/>").replace("\n\n","<br/>"),
+                body = request.form.get('body'),
                 timestamp = datetime.now()
             )
             db.session.add(article)
@@ -167,7 +167,7 @@ def psot_article():
                 article.title = request.form.get('title')
                 article.packet_id = request.form.get('packet_id')
                 article.show = request.form.get('show')
-                article.body = request.form.get('body').strip().replace("\r\n\r\n","<br/>").replace("\n\n","<br/>")
+                article.body = request.form.get('body')
                 article.timestamp = datetime.now()
                 db.session.add(article)
                 db.session.commit()
@@ -282,7 +282,7 @@ def edit():
             title = article['title']
             packet_id = article['packet_id']
             show = article['show']
-            body = article['body']
+            body = article['body'][:-2]
             
     return render_template('admin/edit.html', **locals())
 
