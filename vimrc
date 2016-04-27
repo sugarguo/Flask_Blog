@@ -11,6 +11,8 @@ call vundle#begin()
 Plugin 'gmarik/Vundle.vim'
 Plugin 'scrooloose/syntastic' 
 
+Plugin 'nvie/vim-flake8'
+
 " The following are examples of different formats supported.
 " Keep Plugin commands between vundle#begin/end.
 " plugin on GitHub repo
@@ -102,6 +104,8 @@ set fencs=utf-8,usc-bom,euc-jp,gb18030,gbk,gb2312,cp936 	" 设置编码的自动
 set nocp
 
 syntax enable
+
+let python_highlight_all=1
 syntax on				" 语法高亮
 
 " colorscheme desert
