@@ -1,6 +1,7 @@
 set nocompatible              " be iMproved, required
 filetype off                  " required
 
+
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
@@ -30,7 +31,8 @@ let Tlist_Show_One_File=1               "不同时显示多个文件的tag，只
 let Tlist_WinWidt =28                    "设置taglist的宽度
 let Tlist_Exit_OnlyWindow=1             "如果taglist窗口是最后一个窗口，则退出vim
 let Tlist_Use_Right_Window=1            "在右侧窗口中显示taglist窗口
-let Tlist_Use_Left_Windo =1                "在左侧窗口中显示taglist窗口
+let Tlist_Use_Left_Windo =0                "在左侧窗口中显示taglist窗口
+nmap <F3> : Tlist<CR>
 
 Plugin 'tpope/vim-fugitive'
 Plugin 'terryma/vim-multiple-cursors'
@@ -48,7 +50,7 @@ let g:neocomplcache_enable_auto_select = 1
 " Plugin 'Valloric/YouCompleteMe'
 " Plugin 'rdnetto/YCM-Generator'
 Plugin 'bling/vim-airline'
- "设置状态栏符号显示，下面编码用双引号"
+"设置状态栏符号显示，下面编码用双引号"
 "let g:Powerline_symbols='fancy'
 "let g:airline_symbols = {}
 "let g:airline_left_sep = '\u2b80' 
@@ -76,7 +78,7 @@ set laststatus=2
 " Plugin 'user/L9', {'name': 'newL9'}
 
 call vundle#end()            " required
-call pathogen#infect()
+" call pathogen#infect()
 
 filetype plugin indent on    " required
 " To ignore plugin indent changes, instead use:
@@ -152,21 +154,54 @@ set hlsearch
 
 if (has("win32"))
 
-    "-------------------------------------------------------------------------
-    " Win32
-    "-------------------------------------------------------------------------
+	"-------------------------------------------------------------------------
+	" Win32
+	"-------------------------------------------------------------------------
 
-    if (has("gui_running"))
-        set guifont=Bitstream_Vera_Sans_Mono:h9:cANSI
-        set guifontwide=NSimSun:h9:cGB2312
-    endif
+	if (has("gui_running"))
+		set guifont=Bitstream_Vera_Sans_Mono:h9:cANSI
+		set guifontwide=NSimSun:h9:cGB2312
+	endif
 
 else
 
-    if (has("gui_running"))
-        set guifont=Bitstream\ Vera\ Sans\ Mono\ 9
-    endif
+	if (has("gui_running"))
+		set guifont=Bitstream\ Vera\ Sans\ Mono\ 9
+	endif
 
 endif
 
 au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif   
+
+
+
+""""""""""""""""""""""""""""""
+"=> cscope setting
+""""""""""""""""""""""""""""""
+if has("cscope")
+    set csprg=/usr/bin/cscope
+    set csto=1
+    set cst
+    set nocsverb
+    " add any database in current directory
+    if filereadable("cscope.out")
+        cs add cscope.out
+    endif
+    set csverb
+endif
+ 
+""""""""""""""""""""""""""""""
+" => keyboard shortcuts
+""""""""""""""""""""""""""""""
+" Toggle paste mode on and off
+map <leader>pp :setlocal paste!<cr>
+ 
+" Cscope
+    nmap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>	
+    nmap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>	
+    nmap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>	
+    nmap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>	
+    nmap <C-\>e :cs find e <C-R>=expand("<cword>")<CR><CR>	
+    nmap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>	
+    nmap <C-\>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+    nmap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>	
